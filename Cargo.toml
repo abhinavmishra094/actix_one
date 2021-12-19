@@ -22,3 +22,4 @@ tracing-actix-web = "0.2.1"
 actix-web-opentelemetry = "0.10.0"
 pbkdf2 = "0.10.0"
 rand_core = { version = "0.6", features = ["std"] }
+actix-web-httpauth = { git = "https://github.com/actix/actix-extras" }
