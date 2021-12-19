@@ -1,13 +1,11 @@
-mod database;
-mod hash;
+mod models;
+mod routes;
 mod schema;
-mod user;
-
+mod utils;
 extern crate dotenv;
 extern crate uuid;
 #[macro_use]
 extern crate diesel;
-
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 
 use dotenv::dotenv;
@@ -28,7 +26,7 @@ async fn hello_name(name: web::Path<String>) -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    let connection = database::create_database_pool();
+    let connection = utils::database::create_database_pool();
     let subscriber = get_subscriber("app".into(), "info".into());
     init_subscriber(subscriber);
     HttpServer::new(move || {
@@ -37,8 +35,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(TracingLogger)
             .service(hello)
             .service(hello_name)
-            .service(user::register)
-            .service(user::login)
+            .service(routes::user_routes::register)
+            .service(routes::user_routes::login)
     })
     .bind("127.0.0.1:8080")?
     .run()
