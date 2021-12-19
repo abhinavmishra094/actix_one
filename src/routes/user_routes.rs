@@ -7,7 +7,6 @@ use crate::utils::hash;
 use diesel::r2d2::{self, ConnectionManager};
 
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
-use crate::schema::users;
 
 #[post("/register")]
 pub async fn register(pool: web::Data<DbPool>, user: web::Json<NewUser>) -> Result<User, Error> {
