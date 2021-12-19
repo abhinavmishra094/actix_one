@@ -4,6 +4,7 @@ use diesel::prelude::*;
 
 use crate::models::user::{Login, LoginSuccess, NewUser, User};
 use crate::utils::hash;
+use crate::utils::jwtauth::create_token;
 use diesel::r2d2::{self, ConnectionManager};
 
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
@@ -19,7 +20,7 @@ pub async fn login(pool: web::Data<DbPool>, user: web::Json<Login>) -> impl Resp
     let password = user.password.clone();
     Login::login(pool, user).await.map(|user| {
         if hash::verify_password(&user.password, &password) {
-            let token = "";
+            let token = create_token(user.username, user.email);
             HttpResponse::Ok().json(LoginSuccess {
                 status: "success".to_string(),
                 token: token.to_string(),
