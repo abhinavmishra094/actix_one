@@ -1,13 +1,16 @@
 use std::future::{ready, Ready};
 
-use actix_web::{Error, HttpRequest, HttpResponse, Responder};
+use actix_web::{web, Error, HttpRequest, HttpResponse, Responder};
 use chrono::NaiveDateTime;
+use diesel::prelude::*;
 
+use crate::schema::users;
+use crate::utils::hash;
+use diesel::r2d2::{self, ConnectionManager};
 use diesel::Insertable;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-
-use crate::schema::users;
+type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[table_name = "users"]
@@ -62,5 +65,36 @@ impl Responder for User {
         ready(Ok(HttpResponse::Ok()
             .content_type("application/json")
             .body(body)))
+    }
+}
+
+impl NewUser {
+    pub async fn create_user(pool: web::Data<DbPool>, user: NewUser) -> Result<User, Error> {
+        let mut user = user;
+        println!("{:?}", user);
+        user.uid = Uuid::new_v4();
+        user.password = hash::hash_password(&user.password);
+        let user = web::block(move || {
+            let conn = pool.get().unwrap();
+            diesel::insert_into(users::table)
+                .values(&user)
+                .get_result::<User>(&conn)
+        })
+        .await?;
+
+        Ok(user)
+    }
+}
+
+impl Login {
+    pub async fn login(pool: web::Data<DbPool>, user: Login) -> Result<User, Error> {
+        let conn = pool.get().unwrap();
+        let user = web::block(move || {
+            users::table
+                .filter(users::username.eq(&user.username))
+                .first::<User>(&conn)
+        })
+        .await?;
+        Ok(user)
     }
 }
