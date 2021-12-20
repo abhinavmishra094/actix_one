@@ -67,6 +67,24 @@ impl Responder for User {
             .body(body)))
     }
 }
+impl User {
+    fn get_user_by_id(id: i64, pool: web::Data<DbPool>) -> User {
+        unimplemented!()
+    }
+
+    fn get_user_by_username(username: String, pool: web::Data<DbPool>) -> User {
+        unimplemented!()
+    }
+
+    pub async fn get_users(pool: web::Data<DbPool>) -> Vec<User> {
+        web::block(move || {
+            let conn = pool.get().unwrap();
+            users::table.load::<User>(&conn)
+        })
+        .await
+        .unwrap()
+    }
+}
 
 impl NewUser {
     pub async fn create_user(pool: web::Data<DbPool>, user: NewUser) -> Result<User, Error> {

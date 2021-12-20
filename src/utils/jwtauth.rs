@@ -1,26 +1,24 @@
 use chrono::Utc;
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use jsonwebtoken::{
+    decode, encode, errors::Error, DecodingKey, EncodingKey, Header, TokenData, Validation,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-struct CustomClaims {
+pub struct CustomClaims {
     username: String,
     email: String,
     iat: usize,
     exp: usize,
 }
 
-pub fn validate_token(token: &str) -> bool {
+pub fn validate_token(token: &str) -> Result<TokenData<CustomClaims>, Error> {
     let token = decode::<CustomClaims>(
         &token,
         &DecodingKey::from_secret("secret".as_ref()),
         &Validation::default(),
     );
-    let res = match token {
-        Ok(_) => true,
-        Err(_) => false,
-    };
-    res
+    token
 }
 
 pub fn create_token(username: String, email: String) -> String {

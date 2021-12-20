@@ -1,4 +1,4 @@
-use actix_web::{post, web, Error, HttpResponse, Responder};
+use actix_web::{get, post, web, Error, HttpResponse, Responder};
 
 use diesel::prelude::*;
 
@@ -35,4 +35,10 @@ pub async fn login(pool: web::Data<DbPool>, user: web::Json<Login>) -> impl Resp
                 .body(json.unwrap())
         }
     })
+}
+
+#[get("/users")]
+pub async fn get_users(pool: web::Data<DbPool>) -> impl Responder {
+    let users = User::get_users(pool).await;
+    HttpResponse::Ok().json(users)
 }

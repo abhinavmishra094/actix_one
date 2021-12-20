@@ -1,3 +1,4 @@
+mod middelware;
 mod models;
 mod routes;
 mod schema;
@@ -13,6 +14,7 @@ use tracing::{subscriber::set_global_default, Subscriber};
 use tracing_actix_web::TracingLogger;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
 use tracing_log::LogTracer;
+
 use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry};
 
 #[get("/")]
@@ -28,6 +30,7 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
     let connection = utils::database::create_database_pool();
     let subscriber = get_subscriber("app".into(), "info".into());
+
     init_subscriber(subscriber);
     HttpServer::new(move || {
         App::new()
@@ -37,6 +40,7 @@ async fn main() -> std::io::Result<()> {
             .service(hello_name)
             .service(routes::user_routes::register)
             .service(routes::user_routes::login)
+            .service(routes::user_routes::get_users)
     })
     .bind("127.0.0.1:8080")?
     .run()
