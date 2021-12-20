@@ -22,11 +22,10 @@ pub struct NewUser {
     #[serde(skip_serializing)]
     pub password: String,
 }
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
 pub struct User {
-    #[serde(skip)]
     pub id: i64,
-    #[serde(skip)]
     pub uid: Uuid,
     pub username: String,
     pub email: String,
@@ -68,12 +67,27 @@ impl Responder for User {
     }
 }
 impl User {
-    fn get_user_by_id(id: i64, pool: web::Data<DbPool>) -> User {
-        unimplemented!()
+    pub async fn get_user_by_id(id: i64, pool: web::Data<DbPool>) -> Result<User, Error> {
+        let conn = pool.get().unwrap();
+        let user =
+            web::block(move || users::table.filter(users::id.eq(id)).first::<User>(&conn)).await?;
+
+        Ok(user)
     }
 
-    fn get_user_by_username(username: String, pool: web::Data<DbPool>) -> User {
-        unimplemented!()
+    pub async fn get_user_by_username(
+        username: String,
+        pool: web::Data<DbPool>,
+    ) -> Result<User, Error> {
+        let conn = pool.get().unwrap();
+        let user = web::block(move || {
+            users::table
+                .filter(users::username.eq(username))
+                .first::<User>(&conn)
+        })
+        .await?;
+
+        Ok(user)
     }
 
     pub async fn get_users(pool: web::Data<DbPool>) -> Vec<User> {

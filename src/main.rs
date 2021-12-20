@@ -7,7 +7,7 @@ extern crate dotenv;
 extern crate uuid;
 #[macro_use]
 extern crate diesel;
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{App, HttpServer};
 
 use dotenv::dotenv;
 use tracing::{subscriber::set_global_default, Subscriber};
@@ -17,14 +17,6 @@ use tracing_log::LogTracer;
 
 use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry};
 
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world")
-}
-#[get("/hello/{name}")]
-async fn hello_name(name: web::Path<String>) -> impl Responder {
-    HttpResponse::Ok().body(format!("Hello {}!", name))
-}
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
@@ -36,11 +28,11 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .data(connection.clone())
             .wrap(TracingLogger)
-            .service(hello)
-            .service(hello_name)
             .service(routes::user_routes::register)
             .service(routes::user_routes::login)
             .service(routes::user_routes::get_users)
+            .service(routes::user_routes::get_user_by_id)
+            .service(routes::user_routes::get_user_by_name)
     })
     .bind("127.0.0.1:8080")?
     .run()
