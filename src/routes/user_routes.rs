@@ -43,7 +43,7 @@ pub async fn get_users(pool: web::Data<DbPool>) -> impl Responder {
     HttpResponse::Ok().json(users)
 }
 
-#[get("/users/username/{username}")]
+#[get("/users/username/{username}", wrap = "auth::AuthorizationService")]
 async fn get_user_by_name(username: web::Path<String>, pool: web::Data<DbPool>) -> impl Responder {
     let user = User::get_user_by_username(username.to_string(), pool).await;
     match user {
@@ -52,7 +52,7 @@ async fn get_user_by_name(username: web::Path<String>, pool: web::Data<DbPool>) 
     }
 }
 
-#[get("/users/id/{id}")]
+#[get("/users/id/{id}", wrap = "auth::AuthorizationService")]
 async fn get_user_by_id(id: web::Path<i64>, pool: web::Data<DbPool>) -> impl Responder {
     // let id = id.parse::<i64>().unwrap();
     let user = User::get_user_by_id(*id, pool).await;
