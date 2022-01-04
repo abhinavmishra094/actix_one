@@ -1,5 +1,5 @@
+use crate::middelware::auth;
 use actix_web::{get, post, web, Error, HttpResponse, Responder};
-
 use diesel::prelude::*;
 
 use crate::models::user::{Login, LoginSuccess, NewUser, User};
@@ -37,7 +37,7 @@ pub async fn login(pool: web::Data<DbPool>, user: web::Json<Login>) -> impl Resp
     })
 }
 
-#[get("/users")]
+#[get("/users", wrap = "auth::AuthorizationService")]
 pub async fn get_users(pool: web::Data<DbPool>) -> impl Responder {
     let users = User::get_users(pool).await;
     HttpResponse::Ok().json(users)

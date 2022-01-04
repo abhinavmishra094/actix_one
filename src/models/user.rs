@@ -12,24 +12,30 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate, Insertable)]
 #[table_name = "users"]
 pub struct NewUser {
     #[serde(skip)]
     pub uid: Uuid,
+    #[validate(length(min = 3, max = 50))]
     pub username: String,
+    #[validate(email)]
     pub email: String,
     #[serde(skip_serializing)]
+    #[validate(length(min = 8, max = 50))]
     pub password: String,
 }
 #[allow(dead_code)]
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate, Queryable)]
 pub struct User {
     pub id: i64,
     pub uid: Uuid,
+    #[validate(length(min = 3, max = 50))]
     pub username: String,
+    #[validate(email)]
     pub email: String,
     #[serde(skip_serializing)]
+    #[validate(length(min = 8, max = 50))]
     pub password: String,
     #[serde(skip)]
     pub sign_in_count: i32,
@@ -43,9 +49,11 @@ pub struct User {
     created_at: Option<NaiveDateTime>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct Login {
+    #[validate(length(min = 3, max = 50))]
     pub username: String,
+    #[validate(length(min = 3, max = 50))]
     pub password: String,
 }
 
