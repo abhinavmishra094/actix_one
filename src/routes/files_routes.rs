@@ -16,7 +16,7 @@ use uuid::Uuid;
 
 #[post("/uploadFiles", wrap = "auth::AuthorizationService")]
 pub async fn upload_files(mut payload: Multipart) -> Result<HttpResponse, Error> {
-    let path = env::var("PATH").unwrap();
+    let path = env::var("UPLOADPATH").unwrap();
     println!("path: {}", path);
     while let Some(mut item) = payload.try_next().await? {
         let content_disposition = item
@@ -27,10 +27,10 @@ pub async fn upload_files(mut payload: Multipart) -> Result<HttpResponse, Error>
             |f| -> String { sanitize_filename::sanitize(f) },
         );
         println!("Filename: {}", filename);
-        if !fs::metadata("./tmp/").is_ok() {
-            fs::create_dir_all("./tmp/").unwrap();
+        if !fs::metadata(env::var("UPLOADPATH").unwrap()).is_ok() {
+            fs::create_dir_all(env::var("UPLOADPATH").unwrap()).unwrap();
         }
-        let filepath = format!("./tmp/{}", filename);
+        let filepath = format!("{}/{}", path, filename);
 
         let mut f = web::block(|| std::fs::File::create(filepath)).await?;
 
