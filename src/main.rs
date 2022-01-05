@@ -25,9 +25,9 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .data(connection.clone())
-            .wrap(Logger::default())
-            .wrap(Logger::new("%a %{User-Agent}i"))
-            .wrap(Logger::default())
+            .wrap(Logger::new(
+                "\nRemote IP Address %a\nTime taken to start process %t \n%r %s \nSize of response in bytes, including HTTP headers is %b\n%{Referer}i \nUser Agent %{User-Agent}i \nTime taken to serve the request, in milliseconds %D",
+            ))
             .service(routes::user_routes::register)
             .service(routes::user_routes::login)
             .service(routes::user_routes::get_users)
