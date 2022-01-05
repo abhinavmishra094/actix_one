@@ -33,6 +33,7 @@ async fn main() -> std::io::Result<()> {
             .service(routes::user_routes::get_users)
             .service(routes::user_routes::get_user_by_id)
             .service(routes::user_routes::get_user_by_name)
+            .service(routes::files_routes::upload_files)
     })
     .bind(format!(
         "{}:{}",
